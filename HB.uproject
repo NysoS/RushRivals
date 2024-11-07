@@ -1,0 +1,103 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{C2C0199B-46CF-49EB-3D6F-69AD001B42B6}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "HB",
+			"Type": "Runtime",
+			"LoadingPhase": "Default",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject",
+				"UMG",
+				"ModuleNetworkEOS"
+			]
+		},
+		{
+			"Name": "ModuleNetworkEOS",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject",
+				"DeveloperSettings"
+			]
+		},
+		{
+			"Name": "CPathfinding",
+			"Type": "Runtime",
+			"LoadingPhase": "PreDefault",
+			"AdditionalDependencies": [
+				"Engine",
+				"CoreUObject",
+				"DeveloperSettings"
+			]
+		}
+	],
+	"Plugins": [
+		{
+			"Name": "ModelingToolsEditorMode",
+			"Enabled": true,
+			"TargetAllowList": [
+				"Editor"
+			]
+		},
+		{
+			"Name": "OnlineServicesEOSGS",
+			"Enabled": true
+		},
+		{
+			"Name": "OnlineServicesEOS",
+			"Enabled": true
+		},
+		{
+			"Name": "EOSShared",
+			"Enabled": true
+		},
+		{
+			"Name": "SocketSubsystemEOS",
+			"Enabled": true
+		},
+		{
+			"Name": "OnlineSubsystemEOS",
+			"Enabled": true
+		},
+		{
+			"Name": "FunctionalTestingEditor",
+			"Enabled": true
+		},
+		{
+			"Name": "AutomationDriverTests",
+			"Enabled": true
+		},
+		{
+			"Name": "EditorTests",
+			"Enabled": true
+		},
+		{
+			"Name": "RuntimeTests",
+			"Enabled": true
+		},
+		{
+			"Name": "TestSamples",
+			"Enabled": true
+		},
+		{
+			"Name": "UdpMessaging",
+			"Enabled": false
+		},
+		{
+			"Name": "AsyncLoadingScreen",
+			"Enabled": false,
+			"MarketplaceURL": "com.epicgames.launcher://ue/marketplace/product/01f39767dc6b4290877f38365787cbf8"
+		}
+	],
+	"TargetPlatforms": [
+		"Windows",
+		"Linux",
+		"LinuxArm64",
+		"HoloLens"
+	]
+}

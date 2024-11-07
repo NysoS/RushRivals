@@ -1,0 +1,1 @@
+Sert pour les .fbx
