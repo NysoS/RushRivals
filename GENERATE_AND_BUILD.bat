@@ -1,0 +1,4 @@
+start E:/Software/UnrealEngine/Engine/Build/BatchFiles/Build.bat  -projectfiles -project="E:/RushRivalsProject/HB.uproject" -game -engine -progress -log="E:\RushRivalsProject/Saved/Logs/UnrealVersionSelector-"%date:~6,4%.%date:~3,2%.%date:~0,2%-%time:~0,2%.%time:~3,2%.%time:~6,2%".log"
+
+#start C:/Program Files/Epic Games/UE_5.2/Engine/Binaries/DotNET/UnrealBuildTool -Target="HBEditor Win64 Development -Project=\"E:\RushRivalsProject\HB.uproject\"" -Target="ShaderCompileWorker Win64 Development -Quiet" -WaitMutex -FromMsBuild
+start E:/Software/UnrealEngine/Engine/Binaries/DotNET/UnrealBuildTool/UnrealBuildTool.exe -Target="HBEditor Win64 Development -Project=\"E:\RushRivalsProject\HB.uproject\"" -Target="ShaderCompileWorker Win64 Development -Quiet" -WaitMutex -FromMsBuild
