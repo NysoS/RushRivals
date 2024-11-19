@@ -12,7 +12,6 @@
 */
 #include "Character/HBCharacter.h"
 
-#include "AI/Pawn/AI_Fotch.h"
 #include "Camera/CameraComponent.h"
 #include "Character/HitboxCamManager.h"
 #include "Character/HitboxMovement.h"
