@@ -13,6 +13,5 @@ public class HBTarget : TargetRules
 		bUseLoggingInShipping = true;
 		ExtraModuleNames.Add("HB");
 	    ExtraModuleNames.Add("ModuleNetworkEOS");
-		ExtraModuleNames.Add("CPathfinding");
 	}
 }

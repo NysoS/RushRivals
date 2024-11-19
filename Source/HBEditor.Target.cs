@@ -12,6 +12,5 @@ public class HBEditorTarget : TargetRules
 		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
         ExtraModuleNames.Add("HB");
 		ExtraModuleNames.Add("ModuleNetworkEOS");
-		ExtraModuleNames.Add("CPathfinding");
 	}
 }
