@@ -18,7 +18,6 @@ public class HB : ModuleRules
 			"GameplayTasks",
 			"Niagara",
 			"ModuleNetworkEOS",
-			"CPathfinding", // Module for pathfinding;
         });
 
 		PrivateDependencyModuleNames.AddRange(new string[]
