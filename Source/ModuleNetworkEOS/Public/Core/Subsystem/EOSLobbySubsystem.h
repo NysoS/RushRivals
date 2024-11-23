@@ -44,10 +44,6 @@ public:
 	bool DestroyLobby(FName SessionName);
 	void OnDestroyLobbyProgress(FName SessionName, bool bWasSuccessful);
 
-	UFUNCTION(BlueprintCallable, Category = "EOS|Lobby|Functions")
-	void FindSessionById(const FString& FriendId, const FString& LobbyId);
-	void OnFindSessionById(int32 LocalUserNum, bool bWasSuccessful, const FOnlineSessionSearchResult& SearchResults);
-
 	UFUNCTION(BlueprintCallable)
 	void BackToLobby();
 

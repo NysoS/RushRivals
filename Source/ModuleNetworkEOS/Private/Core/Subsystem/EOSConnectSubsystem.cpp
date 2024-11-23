@@ -14,6 +14,8 @@ void UEOSConnectSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	Super::Initialize(Collection);
 
 	m_IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface();
+
+	WARNING_LOG(TEXT("Connect Subsystem initialized"));
 }
 
 void UEOSConnectSubsystem::Deinitialize()
