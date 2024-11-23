@@ -4,14 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "EOSConnectInterface.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "EOSGameInstanceSubsystem.h"
+#include "Interfaces/OnlineIdentityInterface.h"
 #include "EOSConnectSubsystem.generated.h"
 
 /**
  * 
  */
 UCLASS(Blueprintable, BlueprintType)
-class MODULENETWORKEOS_API UEOSConnectSubsystem : public UGameInstanceSubsystem, public IEOSConnectInterface
+class MODULENETWORKEOS_API UEOSConnectSubsystem : public UEOSGameInstanceSubsystem, public IEOSConnectInterface
 {
 	GENERATED_BODY()
 
@@ -21,6 +22,7 @@ class MODULENETWORKEOS_API UEOSConnectSubsystem : public UGameInstanceSubsystem,
 
 public:
 	virtual void Initialize(FSubsystemCollectionBase& Collection) override;
+	virtual void Deinitialize() override;
 
 	UFUNCTION(BlueprintCallable, Category = "EOS|Connect|Functions")
 	virtual bool Login() override;
@@ -31,7 +33,6 @@ public:
 	UFUNCTION(BlueprintCallable, Category = "EOS|Connect|Functions")
 	bool LoginWithLuncher();
 	void OnAutoLoginComplete(int32 LocalUserNum, bool bWasSuccessful, const FUniqueNetId& UserId, const FString& Error);
-
 
 	UFUNCTION(BlueprintCallable, Category = "EOS|Connect|Functions")
 	virtual void Logout(int32 LocalUserNum = 0) override;
@@ -48,4 +49,6 @@ public:
 	UPROPERTY(BlueprintAssignable)
 	FOnLogoutComplete OnLogoutComplete;
 
+private:
+	IOnlineIdentityPtr m_IdentityPtr;
 };
