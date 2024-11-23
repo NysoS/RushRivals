@@ -4,13 +4,15 @@
 
 #include "CoreMinimal.h"
 #include "EOSSessionInterface.h"
+#include "EOSGameInstanceSubsystem.h"
 #include "Online/Session/LobbyInfo.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "EOSSessionSubsystem.generated.h"
 
 class UCacheSubsystem;
 
 UCLASS(Blueprintable, BlueprintType)
-class MODULENETWORKEOS_API UEOSSessionSubsystem : public UGameInstanceSubsystem, public IEOSSessionInterface
+class MODULENETWORKEOS_API UEOSSessionSubsystem : public UEOSGameInstanceSubsystem, public IEOSSessionInterface
 {
 	GENERATED_BODY()
 
@@ -102,6 +104,8 @@ public:
 	FSessionInfo GetSessionInfo();
 
 private:
+	IOnlineSessionPtr m_SessionPtr;
+
 	TSharedPtr<FOnlineSessionSearch> SessionSearch;
 
 	UPROPERTY()
