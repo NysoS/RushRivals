@@ -17,6 +17,8 @@ void UEOSGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 		ERROR_LOG(TEXT("Online Subsystem cannot be initialized"));
 		return;
 	}
+
+	ERROR_LOG(TEXT("Online Game Instance Subsystem initialized"));
 }
 
 void UEOSGameInstanceSubsystem::Deinitialize()
@@ -25,7 +27,7 @@ void UEOSGameInstanceSubsystem::Deinitialize()
 
 	if (EOSOnlineSubsytem != nullptr)
 	{
-		delete EOSOnlineSubsytem;
-		EOSOnlineSubsytem = nullptr;
+	/*	delete EOSOnlineSubsytem;
+		EOSOnlineSubsytem = nullptr;*/
 	}
 }

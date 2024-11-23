@@ -21,5 +21,8 @@ public:
 	virtual void Deinitialize() override;
 
 protected:
+	virtual bool ShouldCreateSubsystem(UObject* Outer) const override { return true; }
+
+protected:
 	IOnlineSubsystem* EOSOnlineSubsytem;
 };

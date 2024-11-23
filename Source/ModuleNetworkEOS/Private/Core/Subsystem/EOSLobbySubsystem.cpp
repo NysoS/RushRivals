@@ -24,8 +24,6 @@ void UEOSLobbySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-//	REGISTER_ACTION_TYPE(SearchMatchmakingAction)
-
 	if (!EOSOnlineSubsytem)
 		return;
 
@@ -148,7 +146,7 @@ void UEOSLobbySubsystem::OnLobbyInviteAccepted(const bool bWasSuccessful, const 
 	UE_LOG(ModuleNetworkEOS, Warning, TEXT("Session invite Accepted"));
 	if (bWasSuccessful)
 	{
-		JoinLobbyHandle = SessionPtr->AddOnJoinSessionCompleteDelegate_Handle(
+		JoinLobbyHandle = m_SessionPtr->AddOnJoinSessionCompleteDelegate_Handle(
 			FOnJoinSessionCompleteDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnJoinLobbyComplete)
 		);
 
@@ -168,7 +166,7 @@ void UEOSLobbySubsystem::OnLobbyInviteAccepted(const bool bWasSuccessful, const 
 		WARNING_LOG(TEXT("LOBBY INVITE SESSION NAME %s"), *SessionName)
 		LobbyInfo.SessionName = FName(SessionName);
 
-		SessionPtr->JoinSession(0, FName(SessionName), InviteResult);
+		m_SessionPtr->JoinSession(0, FName(SessionName), InviteResult);
 	}
 
 	m_SessionPtr->ClearOnSessionInviteReceivedDelegate_Handle(Handle);
