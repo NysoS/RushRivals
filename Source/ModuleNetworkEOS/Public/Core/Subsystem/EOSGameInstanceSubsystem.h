@@ -21,5 +21,5 @@ public:
 	virtual void Deinitialize() override;
 
 protected:
-	TUniquePtr<IOnlineSubsystem> EOSOnlineSubsytem;
+	IOnlineSubsystem* EOSOnlineSubsytem;
 };

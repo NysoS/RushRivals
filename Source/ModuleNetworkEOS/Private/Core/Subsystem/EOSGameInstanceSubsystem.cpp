@@ -11,7 +11,7 @@ void UEOSGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
 
-	EOSOnlineSubsytem = MakeUnique<IOnlineSubsystem>(Online::GetSubsystem(GetWorld()));
+	EOSOnlineSubsytem = Online::GetSubsystem(GetWorld());
 	if (!EOSOnlineSubsytem)
 	{
 		ERROR_LOG(TEXT("Online Subsystem cannot be initialized"));
@@ -21,4 +21,11 @@ void UEOSGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 void UEOSGameInstanceSubsystem::Deinitialize()
 {
+	Super::Deinitialize();
+
+	if (EOSOnlineSubsytem != nullptr)
+	{
+		delete EOSOnlineSubsytem;
+		EOSOnlineSubsytem = nullptr;
+	}
 }

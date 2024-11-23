@@ -5,14 +5,15 @@
 #include "CoreMinimal.h"
 #include "Interfaces/OnlineSessionInterface.h"
 #include "Online/Session/LobbyInfo.h"
-#include "Subsystems/GameInstanceSubsystem.h"
+#include "EOSGameInstanceSubsystem.h"
+#include "Interfaces/OnlineSessionInterface.h"
 #include "EOSLobbySubsystem.generated.h"
 
 class UCacheSubsystem;
 class FOnlineUserPresence;
 
 UCLASS(Blueprintable, BlueprintType)
-class MODULENETWORKEOS_API UEOSLobbySubsystem : public UGameInstanceSubsystem
+class MODULENETWORKEOS_API UEOSLobbySubsystem : public UEOSGameInstanceSubsystem
 {
 	GENERATED_BODY()
 
@@ -104,4 +105,7 @@ protected:
 
 	UPROPERTY()
 	FLobbyInfo LobbyInfo;
+
+private:
+	IOnlineSessionPtr m_SessionPtr;
 };

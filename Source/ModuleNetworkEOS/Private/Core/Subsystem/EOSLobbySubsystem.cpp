@@ -26,20 +26,13 @@ void UEOSLobbySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 
 //	REGISTER_ACTION_TYPE(SearchMatchmakingAction)
 
+	if (!EOSOnlineSubsytem)
+		return;
 
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(GetWorld()))
+	m_SessionPtr = EOSOnlineSubsytem->GetSessionInterface();
+	if (!m_SessionPtr)
 	{
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-		{
-			SessionPtr->AddOnSessionUserInviteAcceptedDelegate_Handle(
-				FOnSessionUserInviteAcceptedDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnLobbyInviteAccepted)
-			);
-
-			SessionPtr->OnSessionParticipantJoinedDelegates.AddUObject(this, &UEOSLobbySubsystem::OnJoinLobby);
-			SessionPtr->OnSessionParticipantLeftDelegates.AddUObject(this, &UEOSLobbySubsystem::OnLeftLobby);
-			OnLeftLobbyDelegate.AddUniqueDynamic(this, &UEOSLobbySubsystem::OnLeftLobbyDelegateHandle);
-			UE_LOG(ModuleNetworkEOS, Warning, TEXT("Handle Received"));
-		}
+		ERROR_LOG(TEXT("Session Interface cannot be instanciate"));
 	}
 
 	CacheSubsystem = UGameInstance::GetSubsystem<UCacheSubsystem>(GetGameInstance());
@@ -55,80 +48,69 @@ void UEOSLobbySubsystem::Deinitialize()
 {
 	Super::Deinitialize();
 
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) {
-			SessionPtr->ClearOnSessionSettingsUpdatedDelegate_Handle(UpdateSettingHandle);
+	if (!m_SessionPtr)
+		return;
 
+	m_SessionPtr->ClearOnSessionSettingsUpdatedDelegate_Handle(UpdateSettingHandle);
 
-			SessionPtr->ClearOnSessionParticipantJoinedDelegates(this);
-			SessionPtr->ClearOnSessionParticipantLeftDelegates(this);
+	m_SessionPtr->ClearOnSessionParticipantJoinedDelegates(this);
+	m_SessionPtr->ClearOnSessionParticipantLeftDelegates(this);
 
-			OnLeftLobbyDelegate.RemoveDynamic(this, &UEOSLobbySubsystem::OnLeftLobbyDelegateHandle);
-		}
-	}
+	OnLeftLobbyDelegate.RemoveDynamic(this, &UEOSLobbySubsystem::OnLeftLobbyDelegateHandle);
 
 	QuitLooby();
 }
 
 void UEOSLobbySubsystem::BindLobbyDelegate()
 {
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) {
-			UpdateSettingHandle = SessionPtr->AddOnSessionSettingsUpdatedDelegate_Handle(
-				FOnSessionSettingsUpdatedDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnUpdateLobbySettings)
-			);
-		}
-	}
+	if (!m_SessionPtr)
+		return;
+
+	m_SessionPtr->AddOnSessionUserInviteAcceptedDelegate_Handle(
+		FOnSessionUserInviteAcceptedDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnLobbyInviteAccepted)
+	);
+
+	m_SessionPtr->OnSessionParticipantJoinedDelegates.AddUObject(this, &UEOSLobbySubsystem::OnJoinLobby);
+	m_SessionPtr->OnSessionParticipantLeftDelegates.AddUObject(this, &UEOSLobbySubsystem::OnLeftLobby);
+	OnLeftLobbyDelegate.AddUniqueDynamic(this, &UEOSLobbySubsystem::OnLeftLobbyDelegateHandle);
+
+	UpdateSettingHandle = m_SessionPtr->AddOnSessionSettingsUpdatedDelegate_Handle(
+		FOnSessionSettingsUpdatedDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnUpdateLobbySettings)
+	);
 }
 
 void UEOSLobbySubsystem::CreateLobby()
 {
+	if (!m_SessionPtr)
+		return;
+
 	if (LobbyInfo.bValid)
 	{
 		return;
 	}
 
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) {
+	int32 UniqueId = UObject::GetUniqueID();
+	FName SessionName = FName("Dev_Lobby_" + FString::FromInt(UniqueId));
 
-			int32 UniqueId = UObject::GetUniqueID();
-			FName SessionName = FName("Dev_Lobby_" + FString::FromInt(UniqueId));
+	FOnlineSessionSettings SessionSettings;
+	SessionSettings.bIsDedicated = false;
+	SessionSettings.bIsLANMatch = false;
+	SessionSettings.NumPublicConnections = 0;
+	SessionSettings.NumPrivateConnections = MAX_LOBBY_MEMBERS;
+	SessionSettings.bAllowInvites = true;
+	SessionSettings.bAllowJoinInProgress = false;
+	SessionSettings.bAllowJoinViaPresenceFriendsOnly = true;
+	SessionSettings.bShouldAdvertise = true;
+	SessionSettings.bUseLobbiesIfAvailable = true;
+	SessionSettings.bUsesStats = true;
+	SessionSettings.BuildUniqueId = UniqueId;
+	SessionSettings.bUsesPresence = true;
 
-			FOnlineSessionSettings SessionSettings;
-			SessionSettings.bIsDedicated = false;
-			SessionSettings.bIsLANMatch = false;
-			SessionSettings.NumPublicConnections = 0;
-			SessionSettings.NumPrivateConnections = MAX_LOBBY_MEMBERS;
-			SessionSettings.bAllowInvites = true;
-			SessionSettings.bAllowJoinInProgress = false;
-			SessionSettings.bAllowJoinViaPresenceFriendsOnly = true;
-			SessionSettings.bShouldAdvertise = true;
-			SessionSettings.bUseLobbiesIfAvailable = true;
-			SessionSettings.bUsesStats = true;
-			SessionSettings.BuildUniqueId = UniqueId;
-			SessionSettings.bUsesPresence = true;
+	SessionSettings.Set("Dev_Lobby", FString("dev_l"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
+	SessionSettings.Set("SESSION_NAME", SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineService);
 
-			SessionSettings.Set("Dev_Lobby", FString("dev_l"), EOnlineDataAdvertisementType::ViaOnlineServiceAndPing);
-			SessionSettings.Set("SESSION_NAME", SessionName.ToString(), EOnlineDataAdvertisementType::ViaOnlineService);
-
-			/*LobbyInfo.bIsOwner = true;
-			LobbyInfo.bUseEOSRegister = true;
-			LobbyInfo.SessionName = SessionName;
-
-			if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-			{
-				LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(0));
-			}*/
-
-			/*if (CacheSubsystem)
-			{
-				CacheSubsystem->Set(CACHE_LOBBY_INFO, LobbyInfo);
-			}*/
-
-			SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSLobbySubsystem::OnCreateLobbyProgress);
-			SessionPtr->CreateSession(0, SessionName, SessionSettings);
-		}
-	}
+	m_SessionPtr->OnCreateSessionCompleteDelegates.AddUObject(this, &UEOSLobbySubsystem::OnCreateLobbyProgress);
+	m_SessionPtr->CreateSession(0, SessionName, SessionSettings);
 }
 
 void UEOSLobbySubsystem::OnCreateLobbyProgress(FName SessionName, bool bWasSuccessful)
@@ -136,49 +118,23 @@ void UEOSLobbySubsystem::OnCreateLobbyProgress(FName SessionName, bool bWasSucce
 	WARNING_LOG(TEXT("LOBBY SESSION NAME AFTER CREATE : %s"), *SessionName.ToString())
 
 	if (bWasSuccessful) {
-		if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-			if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) {
+		
+		//GetWorld()->Listen(GetWorld()->GetCurrentLevel()->URL);
+		UE_LOG(ModuleNetworkEOS, Warning, TEXT("On Create Lobby Progress Called"));
 
-				//GetWorld()->Listen(GetWorld()->GetCurrentLevel()->URL);
-				UE_LOG(ModuleNetworkEOS, Warning, TEXT("On Create Lobby Progress Called"));
+		LobbyInfo.bValid = true;
+		LobbyInfo.bIsOwner = true;
+		LobbyInfo.bUseEOSRegister = true;
+		LobbyInfo.SessionName = SessionName;
 
-				LobbyInfo.bValid = true;
-				LobbyInfo.bIsOwner = true;
-				LobbyInfo.bUseEOSRegister = true;
-				LobbyInfo.SessionName = SessionName;
-
-				if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-				{
-					LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(0));
-				}
-
-				OnCreateLobbyCreateCompleted.Broadcast(SessionName, bWasSuccessful);
-
-				SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
-			/*	bIsLobbyAlreadyCreated = true;
-				LobbyGameState->bIsLobbyActive = true;
-
-				const FString LobbyId = GetSessionId::invoke(SessionPtr, SessionName);
-				LobbyGameState->SetLoobyId(LobbyId);*/
-
-				//const Request request = GetResolvedAddress<DefaultResolverType>::invoke(SessionPtr, SessionName);
-		/*		const FRequestDTO RequestDto = Request::makeDTO(request);
-
-				FLobbyInfo LobbyInfo;
-				LobbyInfo.bIsOwner = true;
-				LobbyInfo.LobbyId = LobbyId;
-				LobbyInfo.RequestDto = RequestDto;
-				LobbyInfo.SessionName = SessionName;
-
-				WARNING_LOG(TEXT("Request URL %s"), *request.getUrl())
-				CacheSubsystem->Set(FString(CACHE_LOBBY_INFO), LobbyInfo);*/
-
-				//CacheSubsystem->Set("CACHE_LOBBY_ID", FCacheValue(LobbyId));
-			}
+		if (const IOnlineIdentityPtr IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface())
+		{
+			LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(0));
 		}
 
-		//FCacheValue LobbyIdCacheValue = CacheSubsystem->Get("CACHE_LOBBY_ID");
-		//WARNING_LOG(TEXT("Get LobbyId Cache: ID - %s"), LobbyIdCacheValue.value);
+		OnCreateLobbyCreateCompleted.Broadcast(SessionName, bWasSuccessful);
+
+		m_SessionPtr->ClearOnCreateSessionCompleteDelegates(this);
 
 		OnCreateLobbyCreateCompleted.Broadcast(SessionName, bWasSuccessful);
 	}
@@ -186,103 +142,65 @@ void UEOSLobbySubsystem::OnCreateLobbyProgress(FName SessionName, bool bWasSucce
 
 void UEOSLobbySubsystem::OnLobbyInviteAccepted(const bool bWasSuccessful, const int32 ControllerId, FUniqueNetIdPtr UserId, const FOnlineSessionSearchResult& InviteResult)
 {
+	if (!m_SessionPtr)
+		return;
+
 	UE_LOG(ModuleNetworkEOS, Warning, TEXT("Session invite Accepted"));
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) 
+	if (bWasSuccessful)
 	{
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) 
+		JoinLobbyHandle = SessionPtr->AddOnJoinSessionCompleteDelegate_Handle(
+			FOnJoinSessionCompleteDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnJoinLobbyComplete)
+		);
+
+		LobbyInfo.bValid = true;
+		LobbyInfo.bIsOwner = false;
+		LobbyInfo.bUseEOSRegister = false;
+
+		if (const IOnlineIdentityPtr IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface())
 		{
-			if (bWasSuccessful)
-			{
-				JoinLobbyHandle = SessionPtr->AddOnJoinSessionCompleteDelegate_Handle(
-					FOnJoinSessionCompleteDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnJoinLobbyComplete)
-				);
-
-				LobbyInfo.bValid = true;
-				LobbyInfo.bIsOwner = false;
-				LobbyInfo.bUseEOSRegister = false;
-
-				if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-				{
-					WARNING_LOG(TEXT("Oui %s"), *IdentityPtr->GetPlayerNickname(*UserId));
-					LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(*UserId));
-					LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(0));
-				}
-
-				FString SessionName;
-				InviteResult.Session.SessionSettings.Get("SESSION_NAME", SessionName);
-				WARNING_LOG(TEXT("LOBBY INVITE SESSION NAME %s"), *SessionName)
-				LobbyInfo.SessionName = FName(SessionName);
-				//CacheSubsystem->Set(FString(CACHE_LOBBY_INFO), LobbyInfo);
-
-				SessionPtr->JoinSession(0, FName(SessionName), InviteResult);
-			}
-
-			SessionPtr->ClearOnSessionInviteReceivedDelegate_Handle(Handle);
-			bIsLobbyAlreadyCreated = true;
+			WARNING_LOG(TEXT("Oui %s"), *IdentityPtr->GetPlayerNickname(*UserId));
+			LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(*UserId));
+			LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(0));
 		}
+
+		FString SessionName;
+		InviteResult.Session.SessionSettings.Get("SESSION_NAME", SessionName);
+		WARNING_LOG(TEXT("LOBBY INVITE SESSION NAME %s"), *SessionName)
+		LobbyInfo.SessionName = FName(SessionName);
+
+		SessionPtr->JoinSession(0, FName(SessionName), InviteResult);
 	}
+
+	m_SessionPtr->ClearOnSessionInviteReceivedDelegate_Handle(Handle);
+	bIsLobbyAlreadyCreated = true;
 }
 
 void UEOSLobbySubsystem::OnJoinLobbyComplete(FName SessionName, EOnJoinSessionCompleteResult::Type Result)
 {
 	if (Result == EOnJoinSessionCompleteResult::Success)
 	{
-		/*if (APlayerController* PlayerController = UGameplayStatics::GetPlayerController(UNetworkEOSBPFunctionLibrary::GetActiveWorld(), 0))
-		{*/
-			if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld()))
-			{
-				if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-				{
-	/*				const Request request = GetResolvedAddress<DefaultResolverType>::invoke(SessionPtr, SessionName);
-					const FString LobbyId = GetSessionId::invoke(SessionPtr, SessionName);
-					const FRequestDTO RequestDto = Request::makeDTO(request);
-
-					FLobbyInfo LobbyInfo;
-					CacheSubsystem->Get(FString(CACHE_LOBBY_INFO), LobbyInfo);
-					LobbyInfo.LobbyId = LobbyId;
-					LobbyInfo.RequestDto = RequestDto;
-					LobbyInfo.SessionName = SessionName;
-						
-					CacheSubsystem->Set(FString(CACHE_LOBBY_INFO), LobbyInfo);
-
-					if (request.isValid())
-					{
-						PlayerController->ClientTravel(request.getUrl(), TRAVEL_Absolute);
-					}*/
-
-					OnJoinLobbyDelegate.Broadcast();
-					SessionPtr->ClearOnJoinSessionCompleteDelegate_Handle(JoinLobbyHandle);
-				}
-			}
-		//}
+		OnJoinLobbyDelegate.Broadcast();
+		m_SessionPtr->ClearOnJoinSessionCompleteDelegate_Handle(JoinLobbyHandle);
 	}
 }
 
 bool UEOSLobbySubsystem::DestroyLobby(FName SessionName)
 {
-	if (const IOnlineSubsystem* SubSystem = Online::GetSubsystem(UObject::GetWorld())) {
-		if (const IOnlineSessionPtr SessionPtr = SubSystem->GetSessionInterface()) {
+	if (!m_SessionPtr)
+		return false;
 
-			FOnDestroySessionCompleteDelegate OnDestroySessionCompleteDelegate;
-			OnDestroySessionCompleteDelegate.BindUObject(this, &UEOSLobbySubsystem::OnDestroyLobbyProgress);
+	FOnDestroySessionCompleteDelegate OnDestroySessionCompleteDelegate;
+	OnDestroySessionCompleteDelegate.BindUObject(this, &UEOSLobbySubsystem::OnDestroyLobbyProgress);
 
-			/*FLobbyInfo LobbyInfo;
-			if (CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo))
-			{*/
-			if (LobbyInfo.bIsOwner)
-			{
-				FOnlineSessionSettings* LobbySettings = SessionPtr->GetSessionSettings(SessionName);
-				LobbySettings->Set(FName("setting_update_action_type"), FString("DestroyLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
-				SessionPtr->UpdateSession(SessionName, *LobbySettings);
-			}
-			//}
-
-			DestroyLobbyHandle = SessionPtr->AddOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegate);
-			return SessionPtr->DestroySession(SessionName, OnDestroySessionCompleteDelegate);
-		}
+	if (LobbyInfo.bIsOwner)
+	{
+		FOnlineSessionSettings* LobbySettings = m_SessionPtr->GetSessionSettings(SessionName);
+		LobbySettings->Set(FName("setting_update_action_type"), FString("DestroyLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+		m_SessionPtr->UpdateSession(SessionName, *LobbySettings);
 	}
 
-	return false;
+	DestroyLobbyHandle = m_SessionPtr->AddOnDestroySessionCompleteDelegate_Handle(OnDestroySessionCompleteDelegate);
+	return m_SessionPtr->DestroySession(SessionName, OnDestroySessionCompleteDelegate);
 }
 
 void UEOSLobbySubsystem::OnDestroyLobbyProgress(FName SessionName, bool bWasSuccessful)
@@ -294,65 +212,19 @@ void UEOSLobbySubsystem::OnDestroyLobbyProgress(FName SessionName, bool bWasSucc
 		OnLeftLobbyDelegate.Broadcast(SessionName, "");
 		LobbyInfo.Clear();
 		OnLobbyDestroyComplete.Broadcast();
-		//UGameplayStatics::OpenLevel(UNetworkEOSBPFunctionLibrary::GetActiveWorld(), "Menu");
 	}
-}
-
-void UEOSLobbySubsystem::FindSessionById(const FString& FriendId, const FString& LobbyId)
-{
-	//if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-	//	if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-	//	{
-	//		if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-	//		{
-	//			/*FLobbyInfo LobbyInfo;
-	//			CacheSubsystem->Get(FString(CACHE_LOBBY_INFO), LobbyInfo);
-
-	//			FUniqueNetIdPtr UniqueNetId = IdentityPtr->GetUniquePlayerId(0);
-	//			FUniqueNetIdPtr OwnerNetId = IdentityPtr->CreateUniquePlayerId(FriendId);
-	//			FUniqueNetIdPtr LobbyNetId = IdentityPtr->CreateUniquePlayerId(LobbyId);
-
-	//			FDelegateHandle g = SessionPtr->OnEndSessionCompleteDelegates.AddUObject(this, &UEOSLobbySubsystem::OnCreateLobbyProgress);*/
-
-	//			//SessionPtr->FindSessionById(*UniqueNetId, *LobbyNetId, *OwnerNetId, FOnSingleSessionResultCompleteDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnFindSessionById));
-	//		}
-	//	}
-	//}
-}
-
-void UEOSLobbySubsystem::OnFindSessionById(int32 LocalUserNum, bool bWasSuccessful, const FOnlineSessionSearchResult& SearchResults)
-{
-	/*if (bWasSuccessful)
-	{
-		if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-			if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-			{
-				FLobbyInfo LobbyInfo;
-				CacheSubsystem->Get(FString(CACHE_LOBBY_INFO), LobbyInfo);
-
-				JoinLobbyHandle = SessionPtr->AddOnJoinSessionCompleteDelegate_Handle(
-					FOnJoinSessionCompleteDelegate::CreateUObject(this, &UEOSLobbySubsystem::OnJoinLobbyComplete)
-				);
-
-				SessionPtr->JoinSession(0, LobbyInfo.SessionName, SearchResults);
-			}
-		}
-	}*/
 }
 
 void UEOSLobbySubsystem::BackToLobby()
 {
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
+	if (!m_SessionPtr)
+		return;
 
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-		{
-			if (LobbyInfo.bIsOwner)
-			{
-				FOnlineSessionSettings* LobbySettings = SessionPtr->GetSessionSettings(LobbyInfo.SessionName);
-				LobbySettings->Set(FName("setting_update_action_type"), FString("BackLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
-				SessionPtr->UpdateSession(LobbyInfo.SessionName, *LobbySettings);
-			}
-		}
+	if (LobbyInfo.bIsOwner)
+	{
+		FOnlineSessionSettings* LobbySettings = m_SessionPtr->GetSessionSettings(LobbyInfo.SessionName);
+		LobbySettings->Set(FName("setting_update_action_type"), FString("BackLobby"), EOnlineDataAdvertisementType::ViaOnlineService);
+		m_SessionPtr->UpdateSession(LobbyInfo.SessionName, *LobbySettings);
 	}
 
 	UEOSSessionSubsystem* SessionSubsystem = UGameInstance::GetSubsystem<UEOSSessionSubsystem>(GetGameInstance());
@@ -362,17 +234,8 @@ void UEOSLobbySubsystem::BackToLobby()
 		return;
 	}
 
-	/*FLobbyInfo LobbyInfo;
-	bool bIsLobbyCached = CacheSubsystem->Get<FLobbyInfo>(FString(UEOSLobbySubsystem::CACHE_LOBBY_INFO), LobbyInfo);*/
-
 	FSessionInfo SessionInfo;
-	//if (CacheSubsystem) {
-	//	bool bIsSessionCached = CacheSubsystem->Get<FSessionInfo>(UEOSSessionSubsystem::C_SESSION_INFO, SessionInfo);
-	//	WARNING_LOG(TEXT("SESSION REGISTER TO %s"), *SessionInfo.SessionName.ToString());
-	//}
-	//else {
-		SessionInfo = SessionSubsystem->GetSessionInfo();
-//	}
+	SessionInfo = SessionSubsystem->GetSessionInfo();
 	
 	WARNING_LOG(TEXT("SESSION REGISTER TO %s"), *SessionInfo.SessionName.ToString());
 	if (SessionInfo.bUseEOSRegister)
@@ -393,49 +256,40 @@ void UEOSLobbySubsystem::BackToLobby()
 
 void UEOSLobbySubsystem::QuitLooby()
 {
-	//FLobbyInfo LobbyInfo;
-	//bool bIsLobbyCached = CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo);
+	if (!m_SessionPtr)
+		return;
 
 	if (!LobbyInfo.bValid)
 	{
 		return;
 	}
-	//CacheSubsystem->Clear(CACHE_LOBBY_INFO);
 
 	DestroyLobby(FName(LobbyInfo.SessionName));
 }
 
 void UEOSLobbySubsystem::Invite(const FString& FriendId)
 {
-	/*FLobbyInfo LobbyInfo;
-	bool bIsLobbyCached = CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo);*/
+	if (!m_SessionPtr)
+		return;
 
 	if (!LobbyInfo.bValid)
 	{
 		return;
 	}
 
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
+	if (const IOnlineIdentityPtr IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface())
+	{
+		TSharedPtr<const FUniqueNetId> FriendNetId = IdentityPtr->CreateUniquePlayerId(FriendId);
 
-		if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
+		if (FriendNetId != nullptr)
 		{
-			TSharedPtr<const FUniqueNetId> FriendNetId = IdentityPtr->CreateUniquePlayerId(FriendId);
-
-//			UE_LOG(ModuleNetworkEOS, Warning, TEXT("FriendId %s - UniqueFriendId %s"), *FriendId, *FriendNetId->ToString());
-
-			if (FriendNetId != nullptr)
+			if (m_SessionPtr->SendSessionInviteToFriend(0, LobbyInfo.SessionName, *FriendNetId))
 			{
-				if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface()) 
-				{
-					if (SessionPtr->SendSessionInviteToFriend(0, LobbyInfo.SessionName, *FriendNetId))
-					{
-						UE_LOG(ModuleNetworkEOS, Warning, TEXT("Invite Successfully"));
-					}
-					else
-					{
-						UE_LOG(ModuleNetworkEOS, Warning, TEXT("Invite Error"));
-					}
-				}
+				UE_LOG(ModuleNetworkEOS, Warning, TEXT("Invite Successfully"));
+			}
+			else
+			{
+				UE_LOG(ModuleNetworkEOS, Warning, TEXT("Invite Error"));
 			}
 		}
 	}
@@ -483,21 +337,12 @@ void UEOSLobbySubsystem::OnUpdateLobbySettings(FName SessionName, const FOnlineS
 		OnSettingUpdateAction<TravelMatchmakingAction>::execute(request, GetWorld());
 	} else if (UpdateActionType == "DestroyLobby")
 	{
-		//FLobbyInfo LobbyInfo;
 		WARNING_LOG(TEXT("DESTROYLOBBY SESSIONName: %s"), *SessionName.ToString());
 
 		if (!LobbyInfo.bIsOwner)
 		{
 			QuitLooby();
 		}
-
-		/*if (CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo))
-		{
-			if(!LobbyInfo.bIsOwner)
-			{
-				QuitLooby();
-			}
-		}*/
 	}
 	else if (UpdateActionType == "BackLobby") {
 		OnJoinLobbyDelegate.Broadcast();
@@ -506,43 +351,27 @@ void UEOSLobbySubsystem::OnUpdateLobbySettings(FName SessionName, const FOnlineS
 
 void UEOSLobbySubsystem::UpdateSession()
 {
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
+	if (!m_SessionPtr)
+		return;
 
-		if (const IOnlineSessionPtr SessionPtr = Subsystem->GetSessionInterface())
-		{
-			FOnlineSessionSettings* SearchSettings = SessionPtr->GetSessionSettings(FName("Dev_Lobby"));
-			if (SearchSettings)
-			{
-				SearchSettings->Set(FName("SUAT"), FString("UPDATED VALUE"), EOnlineDataAdvertisementType::ViaOnlineService);
-			}
-			SessionPtr->UpdateSession(FName("Dev_Lobby"), *SearchSettings);
-		}
+	FOnlineSessionSettings* SearchSettings = m_SessionPtr->GetSessionSettings(FName("Dev_Lobby"));
+	if (SearchSettings)
+	{
+		SearchSettings->Set(FName("SUAT"), FString("UPDATED VALUE"), EOnlineDataAdvertisementType::ViaOnlineService);
 	}
+	m_SessionPtr->UpdateSession(FName("Dev_Lobby"), *SearchSettings);
 }
 
 void UEOSLobbySubsystem::OnJoinLobby(FName SessionName, const FUniqueNetId& UserId)
 {
 	WARNING_LOG(TEXT("JoinLobby"));
-	//FLobbyInfo LobbyInfo;
 
-	//bool bIsLobbyCached = CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo);
-	//if (bIsLobbyCached)
-	//{
+	if (const IOnlineIdentityPtr IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface())
+	{
+		WARNING_LOG(TEXT("Join %s"), *IdentityPtr->GetPlayerNickname(UserId))
 
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-		if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-		{
-			auto d = IdentityPtr->CreateUniquePlayerId(UserId.ToString());
-
-			WARNING_LOG(TEXT("Join %s"), *IdentityPtr->GetPlayerNickname(UserId))
-
-			
-			LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(UserId));
-		}
+		LobbyInfo.membersName.Add(IdentityPtr->GetPlayerNickname(UserId));
 	}
-	
-	//}
-	//CacheSubsystem->Set(CACHE_LOBBY_INFO, LobbyInfo);
 
 	OnJoinLobbyDelegate.Broadcast();
 }
@@ -552,12 +381,9 @@ void UEOSLobbySubsystem::OnLeftLobby(FName SessionName, const FUniqueNetId& User
 	WARNING_LOG(TEXT("LeftLobby"));
 
 	FString UserToLeft;
-	if (const IOnlineSubsystem* Subsystem = Online::GetSubsystem(UObject::GetWorld())) {
-
-		if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-		{
-			UserToLeft = IdentityPtr->GetPlayerNickname(UserId);
-		}
+	if (const IOnlineIdentityPtr IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface())
+	{
+		UserToLeft = IdentityPtr->GetPlayerNickname(UserId);
 	}
 
 	OnLeftLobbyDelegate.Broadcast(SessionName, UserToLeft);
@@ -565,11 +391,6 @@ void UEOSLobbySubsystem::OnLeftLobby(FName SessionName, const FUniqueNetId& User
 
 void UEOSLobbySubsystem::OnLeftLobbyDelegateHandle(const FName& SessionName, const FString& UserName)
 {
-	//FLobbyInfo LobbyInfo;
-
-	//bool bIsLobbyCached = CacheSubsystem->Get(CACHE_LOBBY_INFO, LobbyInfo);
-	//if (bIsLobbyCached)
-	//{
 	for (auto Element : LobbyInfo.membersName)
 	{
 		if (Element == UserName)
@@ -578,8 +399,6 @@ void UEOSLobbySubsystem::OnLeftLobbyDelegateHandle(const FName& SessionName, con
 			break;
 		}
 	}
-	//}
-	//CacheSubsystem->Set(CACHE_LOBBY_INFO, LobbyInfo);
 }
 
 FLobbyInfo UEOSLobbySubsystem::GetLobbyInfo()
