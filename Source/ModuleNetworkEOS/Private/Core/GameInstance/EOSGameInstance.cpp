@@ -21,40 +21,6 @@ UEOSGameInstance::UEOSGameInstance()
 	m_ServerInstance = NewObject<UDedicateServerInstance>();
 }
 
-FString UEOSGameInstance::GetPlayerUsername() const
-{
-	IOnlineSubsystem* Subsystem = Online::GetSubsystem(this->GetWorld());
-
-	if (Subsystem)
-	{
-		if (const IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-		{
-			if (GetPlayerStatus())
-			{
-				return IdentityPtr->GetPlayerNickname(0);
-			}
-		}
-	}
-	return FString();
-}
-
-bool UEOSGameInstance::GetPlayerStatus() const
-{
-	IOnlineSubsystem* Subsystem = Online::GetSubsystem(this->GetWorld());
-
-	if (Subsystem)
-	{
-		if (IOnlineIdentityPtr IdentityPtr = Subsystem->GetIdentityInterface())
-		{
-			if (IdentityPtr->GetLoginStatus(0) == ELoginStatus::LoggedIn)
-			{
-				return true;
-			}
-		}
-	}
-	return false;
-}
-
 void UEOSGameInstance::Init()
 {
 	Super::Init();
@@ -131,17 +97,6 @@ void UEOSGameInstance::BeginDestroy()
 	}
 }
 
-void UEOSGameInstance::OnConnectStatusChangeComplete(UWorld* World, bool bIsOnline)
-{
-	if(!bIsOnline)
-	{
-		UE_LOG(ModuleNetworkEOS, Warning, TEXT("Is Offline"));
-	}else
-	{
-		UE_LOG(ModuleNetworkEOS, Warning, TEXT("Is Online"));
-	}
-}
-
 void UEOSGameInstance::HandleNetworkFailureDele(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType,
 	const FString& ErrorString)
 {
@@ -171,26 +126,22 @@ void UEOSGameInstance::AutoLogin()
 		return;
 	}
 
-	if (UEOSConnectSubsystem* ConnectInterface = GetSubsystem<UEOSConnectSubsystem>())
-	{
-		if (ConnectSetting && ConnectInterface) {
+	UEOSConnectSubsystem* ConnectInterface = GetSubsystem<UEOSConnectSubsystem>();
+	if (!ConnectInterface)
+		return;
+
+
+	if (ConnectSetting && ConnectInterface) {
 
 #if WITH_EDITOR
-			bool LoginSuccessfull = ConnectSetting->bUseAccountPortal ? ConnectInterface->Login() : ConnectInterface->LoginWithDevAuth(ConnectSetting->IpSdk + ":" + ConnectSetting->PortSdk, ConnectSetting->DefaultUser);
+		bool LoginSuccessfull = ConnectSetting->bUseAccountPortal ? ConnectInterface->Login() : ConnectInterface->LoginWithDevAuth(ConnectSetting->IpSdk + ":" + ConnectSetting->PortSdk, ConnectSetting->DefaultUser);
 #else
-			bool LoginSuccessfull = ConnectInterface->LoginWithLuncher();
+		bool LoginSuccessfull = ConnectInterface->LoginWithLuncher();
 #endif
 
-			if (!LoginSuccessfull)
-			{
-				UE_LOG(ModuleNetworkEOS, Warning, TEXT("Login failed"));
-			}
-
-			if (UEOSFriendSubsystem* FriendSubsystem = GetSubsystem<UEOSFriendSubsystem>())
-			{
-				FriendSubsystem->OpenOverlay();
-				FriendSubsystem->Init();
-			}
+		if (!LoginSuccessfull)
+		{
+			UE_LOG(ModuleNetworkEOS, Warning, TEXT("Login failed"));
 		}
 	}
 }

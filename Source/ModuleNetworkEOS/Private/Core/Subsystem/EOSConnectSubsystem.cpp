@@ -6,7 +6,6 @@
 #include "ModuleNetworkEOSModules.h"
 #include "OnlineSubsystemUtils.h"
 #include "OnlineSubsystem.h"
-#include "Interfaces/OnlineIdentityInterface.h"
 #include "Interfaces/OnlinePresenceInterface.h"
 
 void UEOSConnectSubsystem::Initialize(FSubsystemCollectionBase& Collection)
@@ -56,7 +55,6 @@ bool UEOSConnectSubsystem::LoginWithDevAuth(const FString& Id, const FString& To
 
 	OnLoginProgressDelegate.Broadcast();
 
-	m_IdentityPtr->OnLoginStatusChangedDelegates->AddUObject(this, &UEOSConnectSubsystem::OnConnectionStatusChanged);
 	m_IdentityPtr->OnLoginCompleteDelegates->AddUObject(this, &UEOSConnectSubsystem::OnLoginProgress);
 	
 	return m_IdentityPtr->Login(0, AccountCredentials);
@@ -147,13 +145,5 @@ void UEOSConnectSubsystem::OnLogoutProgress(int32 LocalUserNum, bool bWasSuccess
 	if (bWasSuccessful)
 	{
 		UE_LOG(ModuleNetworkEOS, Warning, TEXT("[UEOS_Connect] : Logout Successful"));
-	}
-}
-
-void UEOSConnectSubsystem::OnConnectionStatusChanged(int32 LocalUserNum, ELoginStatus::Type OldStatus, ELoginStatus::Type NewStatus, const FUniqueNetId& NewId)
-{
-	if(NewStatus != ELoginStatus::LoggedIn)
-	{
-		UE_LOG(ModuleNetworkEOS, Warning, TEXT("Connection Status! Error type : %d"), NewStatus);
 	}
 }

@@ -19,11 +19,6 @@ class MODULENETWORKEOS_API UEOSGameInstance : public UGameInstance
 	GENERATED_BODY()
 
 public:
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "EOS Functions")
-	FString GetPlayerUsername() const;
-	UFUNCTION(BlueprintCallable, BlueprintPure, Category = "EOS Functions")
-	bool GetPlayerStatus() const;
-
 	UEOSGameInstance();
 	virtual void Init() override;
 	virtual void BeginDestroy() override;
@@ -32,9 +27,6 @@ public:
 	virtual void BeginLoadingScreen(const FString& MapName);
 	UFUNCTION()
 	virtual void EndLoadingScreen(UWorld* World);
-
-	UFUNCTION()
-	void OnConnectStatusChangeComplete(UWorld* World, bool bIsOnline);
 
 	void HandleNetworkFailureDele(UWorld* World, UNetDriver* NetDriver, ENetworkFailure::Type FailureType, const FString& ErrorString);
 

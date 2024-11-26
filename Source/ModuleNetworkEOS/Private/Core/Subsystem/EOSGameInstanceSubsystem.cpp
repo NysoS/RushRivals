@@ -24,10 +24,4 @@ void UEOSGameInstanceSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 void UEOSGameInstanceSubsystem::Deinitialize()
 {
 	Super::Deinitialize();
-
-	if (EOSOnlineSubsytem != nullptr)
-	{
-	/*	delete EOSOnlineSubsytem;
-		EOSOnlineSubsytem = nullptr;*/
-	}
 }

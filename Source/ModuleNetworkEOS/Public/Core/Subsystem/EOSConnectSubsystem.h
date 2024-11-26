@@ -38,8 +38,6 @@ public:
 	virtual void Logout(int32 LocalUserNum = 0) override;
 	virtual void OnLogoutProgress(int32 LocalUserNum, bool bWasSuccessful) override;
 
-	virtual void OnConnectionStatusChanged(int32 LocalUserNum, ELoginStatus::Type OldStatus, ELoginStatus::Type NewStatus, const FUniqueNetId& NewId) override;
-
 	UPROPERTY(BlueprintAssignable)
 	FOnLoginProgress OnLoginProgressDelegate;
 
