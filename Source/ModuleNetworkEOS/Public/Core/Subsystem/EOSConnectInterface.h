@@ -31,6 +31,4 @@ public:
 	UFUNCTION()
 	virtual void Logout(int32 LocalUserNum = 0) = 0;
 	virtual void OnLogoutProgress(int32 LocalUserNum, bool bWasSuccessful) = 0;
-
-	virtual void OnConnectionStatusChanged(int32 LocalUserNum, ELoginStatus::Type OldStatus, ELoginStatus::Type NewStatus, const FUniqueNetId& NewId) = 0;
 };

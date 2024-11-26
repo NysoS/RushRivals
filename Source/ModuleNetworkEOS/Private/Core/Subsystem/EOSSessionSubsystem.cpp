@@ -37,6 +37,7 @@ void UEOSSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	{
 		ERROR_LOG(TEXT("Session Interface cannot be instanciate"));
 	}
+	WARNING_LOG(TEXT("Session Subsystem initialized"));
 
 
 	CacheSubsystem = UGameInstance::GetSubsystem<UCacheSubsystem>(GetGameInstance());
