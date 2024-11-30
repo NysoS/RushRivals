@@ -10,7 +10,7 @@
 #include "Teams/EOSTeamSubsystem.h"
 
 AEOSTeamInfo::AEOSTeamInfo(const FObjectInitializer& ObjectInitializer)
-	: Super(ObjectInitializer), m_TeamDisplayAsset(nullptr), m_TeamId(INDEX_NONE), m_MatchResult(EMatchResult::Draw), m_Score(0)
+	: Super(ObjectInitializer), m_TeamId(INDEX_NONE), m_TeamDisplayAsset(nullptr), m_MatchResult(EMatchResult::Draw), m_Score(0)
 {
 	bReplicates = true;
 	bNetLoadOnClient = true;

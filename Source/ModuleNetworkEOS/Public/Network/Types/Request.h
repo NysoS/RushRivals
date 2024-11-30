@@ -6,7 +6,7 @@ struct ParamConverter
 {
 	static ValueType invoke(const FString& value)
 	{
-		static_assert(false, "ValueType is not supported yet!");
+		//static_assert(false, "ValueType is not supported yet!");
 		return ValueType{};
 	}
 };

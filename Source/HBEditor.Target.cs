@@ -8,9 +8,12 @@ public class HBEditorTarget : TargetRules
 	public HBEditorTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Editor;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_4;
+
+        bValidateFormatStrings = true;
+
+        ExtraModuleNames.Add("ModuleNetworkEOS");
         ExtraModuleNames.Add("HB");
-		ExtraModuleNames.Add("ModuleNetworkEOS");
-	}
+    }
 }

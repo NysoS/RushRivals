@@ -81,11 +81,6 @@ FString AEOSPlayerState::GetLobbyId() const
 	return LobbyId;
 }
 
-void AEOSPlayerState::CopyProperties(const FPlayerStateCopyProperties& PlayerStateCopyProperties)
-{
-	UE_LOG(ModuleNetworkEOS, Warning, TEXT("Custom Copy properties"))
-}
-
 void AEOSPlayerState::GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const
 {
 	Super::GetLifetimeReplicatedProps(OutLifetimeProps);
