@@ -108,12 +108,12 @@ void UEOSTeamComponent::TeamAddNewPlayer(AEOSPlayerState* NewPlayerState)
 {
 	if(TeamA.members.Contains(NewPlayerState) || TeamB.members.Contains(NewPlayerState))
 	{
-		UE_LOG(ModuleNetworkEOS, Warning, TEXT("ALREADY CONTAINS: %ls"), *NewPlayerState->GetPlayerName());
+		UE_LOG(ModuleNetworkEOS, Warning, TEXT("ALREADY CONTAINS: %s"), *NewPlayerState->GetPlayerName());
 
 		return;
 	}
 
-	UE_LOG(ModuleNetworkEOS, Warning, TEXT("AFFECTE NEW PLAYER : %ls"), *NewPlayerState->GetPlayerName());
+	UE_LOG(ModuleNetworkEOS, Warning, TEXT("AFFECTE NEW PLAYER : %s"), *NewPlayerState->GetPlayerName());
 
 	if (TeamA.members.Num() < m_CurrentGameRule.MaxTeamMember && !m_bAffectTeamFlipFlop)
 	{

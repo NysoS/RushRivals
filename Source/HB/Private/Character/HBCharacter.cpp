@@ -30,7 +30,6 @@
 #include "Net/UnrealNetwork.h"
 #include "Teams/EOSTeamInfo.h"
 #include "Teams/EOSTeamSubsystem.h"
-#include "Widget/Skin/Enum_SkinPart.h"
 
 namespace
 {

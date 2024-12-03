@@ -36,7 +36,7 @@ void UEOSLobbySubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	CacheSubsystem = UGameInstance::GetSubsystem<UCacheSubsystem>(GetGameInstance());
 	if (!CacheSubsystem)
 	{
-		ERROR_LOG(TEXT("Cache Subsytem can't be instanciate to %s"), ThisClass::StaticClass())
+		ERROR_LOG(TEXT("Cache Subsytem can't be instanciate to EOSLobbySubsystem"));
 	}
 
 	BindLobbyDelegate();
@@ -321,13 +321,13 @@ void UEOSLobbySubsystem::OnUpdateLobbySettings(FName SessionName, const FOnlineS
 		OnSettingUpdateAction<JoinMatchmakingAction>::execute(SessionSubsystem);
 	} else if (UpdateActionType == TravelMatchmakingAction::GetClassName())
 	{
-		FString ServerAddress, ServerParams, SessionName;
+		FString ServerAddress, ServerParams, SessionNameInfo;
 		SessionSettings.Get(FName("server_address"), ServerAddress);
 		SessionSettings.Get(FName("server_params"), ServerParams);
-		SessionSettings.Get(FName("session_name"), SessionName);
+		SessionSettings.Get(FName("session_name"), SessionNameInfo);
 
 		FSessionInfo SessionInfo = SessionSubsystem->GetSessionInfo();
-		SessionInfo.SessionName = FName(SessionName);
+		SessionInfo.SessionName = FName(SessionNameInfo);
 		SessionInfo.bValid = true;
 		SessionInfo.bUseEOSRegister = false;
 

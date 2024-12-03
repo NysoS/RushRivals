@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Core/GameInstance/EOSGameInstance.h"
+#include "Kismet/GameplayStatics.h"
 #include "HBGameInstance.generated.h"
 
 class UHBSaveGame;
@@ -22,7 +23,8 @@ public:
 	void SaveGame(type SaveGamePtr, const FString& SaveName, const int32& SaveIndex)
 	{
 		check(SaveGamePtr);
-		UGameplayStatics::SaveGameToSlot(SaveGamePtr, SaveName, SaveIndex);
+		// TODO: rework
+		//UGameplayStatics::SaveGameToSlot(SaveGamePtr, SaveName, SaveIndex);
 	}
 
 	template <typename type>

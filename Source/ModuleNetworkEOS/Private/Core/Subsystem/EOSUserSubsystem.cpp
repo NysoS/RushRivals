@@ -8,7 +8,7 @@
 void UEOSUserSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 {
 	Super::Initialize(Collection);
-	m_IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface();
+	//m_IdentityPtr = EOSOnlineSubsytem->GetIdentityInterface();
 }
 
 void UEOSUserSubsystem::Deinitialize()

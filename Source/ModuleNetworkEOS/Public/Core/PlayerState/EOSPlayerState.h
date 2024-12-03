@@ -46,9 +46,6 @@ public:
 	UFUNCTION(BlueprintCallable, BlueprintGetter)
 	FString GetLobbyId() const;
 
-	UFUNCTION()
-	void CopyProperties(const FPlayerStateCopyProperties& PlayerStateCopyProperties);
-
 protected:
 	virtual void GetLifetimeReplicatedProps(TArray<FLifetimeProperty>& OutLifetimeProps) const override;
 };
