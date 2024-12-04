@@ -182,7 +182,7 @@ void AEOSGameMode::Logout(AController* Exiting)
 			const TSharedPtr<const FUniqueNetId> UniqueNetId = GetUniqueNetId(player);
 			if (!UniqueNetId)
 			{
-				UE_LOG(ModuleNetworkEOS, Error, TEXT("Logout : UniqueNetId is nullprt"));
+				UE_LOG(ModuleNetworkEOS, Error, TEXT("GameMode: Logout : UniqueNetId is nullprt"));
 				return;
 			}
 
@@ -200,7 +200,8 @@ void AEOSGameMode::Logout(AController* Exiting)
 					if (SessionPtr->UnregisterPlayer(SessionInfo.SessionName, *UniqueNetId))
 					{
 						SessionPtr->UpdateSession(SessionInfo.SessionName, *SessionPtr->GetSessionSettings(SessionInfo.SessionName), true);
-						SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
+						//SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
+						SessionPtr->ClearOnSessionParticipantLeftDelegates(this);
 						UE_LOG(LogTemp, Warning, TEXT("UnRegistration success"));
 
 						AEOSPlayerController* ExitinPlayerController = Cast<AEOSPlayerController>(Exiting);
@@ -237,7 +238,8 @@ void AEOSGameMode::UnRegisterPlayer(FName SessionName, const FUniqueNetId& Uniqu
 			if (SessionPtr->UnregisterPlayer(FName("Dev_Session"), UniqueNetId))
 			{
 				SessionPtr->UpdateSession(SessionName, *SessionPtr->GetSessionSettings(SessionName), true);
-				SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
+				//SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
+				SessionPtr->ClearOnSessionParticipantLeftDelegates(this);
 				UE_LOG(LogTemp, Warning, TEXT("UnRegistration success"));
 			}
 		}
