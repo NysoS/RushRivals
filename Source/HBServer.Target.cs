@@ -8,9 +8,12 @@ public class HBServerTarget : TargetRules
 	public HBServerTarget(TargetInfo Target) : base(Target)
 	{
 		Type = TargetType.Server;
-		DefaultBuildSettings = BuildSettingsVersion.V2;
-		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_2;
+		DefaultBuildSettings = BuildSettingsVersion.Latest;
+		IncludeOrderVersion = EngineIncludeOrderVersion.Unreal5_5;
+
 		bUseLoggingInShipping = true;
+        bValidateFormatStrings = true;
+
         ExtraModuleNames.Add("HB");
 		ExtraModuleNames.Add("ModuleNetworkEOS");
 	}

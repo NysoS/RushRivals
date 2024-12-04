@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{C2C0199B-46CF-49EB-3D6F-69AD001B42B6}",
+	"EngineAssociation": "5.5",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -51,10 +51,6 @@
 			"Enabled": true
 		},
 		{
-			"Name": "OnlineSubsystemEOS",
-			"Enabled": true
-		},
-		{
 			"Name": "FunctionalTestingEditor",
 			"Enabled": true
 		},
@@ -77,12 +73,15 @@
 		{
 			"Name": "UdpMessaging",
 			"Enabled": false
+		},
+		{
+			"Name": "OnlineSubsystemEOS",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [
 		"Windows",
 		"Linux",
-		"LinuxArm64",
-		"HoloLens"
+		"LinuxArm64"
 	]
 }

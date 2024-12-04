@@ -111,7 +111,8 @@ void AEOSLobbyGameMode::Logout(AController* Exiting)
 					if (SessionPtr->UnregisterPlayer(FName("Dev_Lobby"), *UniqueNetId))
 					{
 						SessionPtr->UpdateSession(FName("Dev_Lobby"), *SessionPtr->GetSessionSettings(FName("Dev_Lobby")), true);
-						SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
+						SessionPtr->ClearOnSessionParticipantLeftDelegates(this);
+						//SessionPtr->ClearOnSessionParticipantRemovedDelegates(this);
 						UE_LOG(LogTemp, Warning, TEXT("UnRegistration success"));
 
 						AEOSPlayerController* ExitinPlayerController = Cast<AEOSPlayerController>(Exiting);

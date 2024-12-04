@@ -15,6 +15,7 @@
 #include "CoreMinimal.h"
 #include "Core/Character/EOSCharacter.h"
 #include "InputActionValue.h"
+#include "Widget/Skin/Enum_SkinPart.h"
 
 #include "HBCharacter.generated.h"
 
@@ -22,14 +23,13 @@ class UWidgetComponent;
 class UDataTable;
 class USkeletalMeshComponent;
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayAnimMontage, USkeletalMeshComponent*, TargetSkel, UAnimMontage*, MontageToPlay);
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStun, bool, isStun);
-
-
 UCLASS(config=Game)
 class AHBCharacter : public AEOSCharacter
 {
 	GENERATED_BODY()
+
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_TwoParams(FOnPlayAnimMontage, USkeletalMeshComponent*, TargetSkel, UAnimMontage*, MontageToPlay);
+	DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnPlayerStun, bool, isStun);
 
 public:
 

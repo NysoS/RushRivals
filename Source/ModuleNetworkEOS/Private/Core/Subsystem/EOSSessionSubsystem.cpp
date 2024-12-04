@@ -43,7 +43,7 @@ void UEOSSessionSubsystem::Initialize(FSubsystemCollectionBase& Collection)
 	CacheSubsystem = UGameInstance::GetSubsystem<UCacheSubsystem>(GetGameInstance());
 	if (!CacheSubsystem)
 	{
-		ERROR_LOG(TEXT("Cache Subsytem can't be instanciate to %s"), ThisClass::StaticClass())
+		ERROR_LOG(TEXT("Cache Subsytem can't be instanciate to EOSSessionSubsystem"));
 	}
 }
 

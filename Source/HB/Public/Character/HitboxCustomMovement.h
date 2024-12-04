@@ -63,7 +63,7 @@ public:
 
 	bool IsServer() const
 	{
-		if (IsValid(m_Owner) && m_Owner->HasBegunPlay())
+		if (m_Owner && m_Owner->HasBegunPlay())
 		{
 			return m_Owner->GetOwner()->HasAuthority();
 		}
@@ -89,7 +89,15 @@ protected:
 	UHitboxMovement* m_Owner;
 };
 
-CREATE_MOVEMENT(Quickfall)
+//CREATE_MOVEMENT(Quickfall)
+class Quickfall : public DefaultMovement<Quickfall>
+{
+using Super = typename DefaultMovement<Quickfall>;
+public:
+	explicit Quickfall(UHitboxMovement* owner = nullptr);
+	virtual void Update(double Deltatime) override;
+	ECustomMovementMode CurrentMovement() const { return CMOVE_Quickfall; }; 
+};
 
 class Slide : public DefaultMovement<Slide>
 {

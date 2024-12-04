@@ -124,7 +124,7 @@ void UEOSConnectSubsystem::OnLoginProgress(int32 LocalUserNum, bool bWasSuccessf
 	}
 	else
 	{
-		UE_LOG(ModuleNetworkEOS, Warning, TEXT("[UEOS_Connect] : Login fail reson - %S"), *Error);
+		UE_LOG(ModuleNetworkEOS, Warning, TEXT("[UEOS_Connect] : Login fail reson - %s"), *Error);
 	}
 }
 

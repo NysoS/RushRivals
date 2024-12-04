@@ -391,17 +391,17 @@ void UHitboxMovement::GenericJump()
 	if (IsCustomMovement())
 	{
 		std::visit(Overload{
-		[&](typename Quickfall) {},
-		[&](typename Slide) {},
-		[&](typename WallRunHorizontal)
+		[&](Quickfall) {},
+		[&](Slide) {},
+		[&](WallRunHorizontal)
 		{
 			JumpOffWall();
 		},
-		[&](typename WallRunVertical)
+		[&](WallRunVertical)
 		{
 			std::get_if<WallRunVertical>(&m_CustomMovement)->JumpOfWall();
 		},
-		[&](typename Vault) {}
+		[&](Vault) {}
 			}, m_CustomMovement);
 	}
 	else
